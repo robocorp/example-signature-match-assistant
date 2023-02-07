@@ -32,8 +32,8 @@ Match Signatures With Library
     @{api_creds} =      Split String    ${secret}[base64ai]     ,
     Set Authorization    ${api_creds}[${0}]    ${api_creds}[${1}]
 
-    ${ref_image} =    Collect file from user    a new document with a signature    1
-    ${query_image} =    Collect file from user    an old document with reference signature    2
+    ${query_image} =    Collect file from user    a new document with a signature    1
+    ${ref_image} =    Collect file from user    an old document with reference signature    2
     ${sigs} =   Get Matching Signatures     ${ref_image}    ${query_image}
     &{matches} =   Filter Matching Signatures      ${sigs}    confidence_threshold=${THRESHOLD}    similarity_threshold=${THRESHOLD}
     Log Dictionary    ${matches}
