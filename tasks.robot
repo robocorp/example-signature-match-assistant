@@ -14,7 +14,7 @@ Resource   resources/base64.robot
 ${THRESHOLD}    0.8
 
 *** Tasks ***
-Signature match
+Signature match assistant
     # Get files with two dialogs
     ${file1_path}=    Collect file from user    a new document with a signature    1
     ${file2_path}=    Collect file from user    an old document with reference signature    2
@@ -28,9 +28,8 @@ Signature match
     Show results dialog    ${sig_path_ref}    ${sig_path_query}    ${sig_conf_ref}    ${sig_conf_query}   ${score}
 
 Match Signatures With Library
-    ${secret} =     Get Secret    document_ai
-    @{api_creds} =      Split String    ${secret}[base64ai]     ,
-    Set Authorization    ${api_creds}[${0}]    ${api_creds}[${1}]
+    ${secret} =     Get Secret    Base64
+    Set Authorization    ${secret}[email]    ${secret}[api-key]
 
     ${ref_image} =    Collect file from user    a new document with a signature    1
     ${query_image} =    Collect file from user    an old document with reference signature    2
