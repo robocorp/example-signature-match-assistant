@@ -8,8 +8,9 @@ channels:
 dependencies:
   # Define conda-forge packages here -> https://anaconda.org/search
   # When available, prefer the conda-forge packages over pip as installations are more efficient.
-  - python=3.9.13               # https://pyreadiness.org/3.9/ 
+  - python=3.9.13               # https://pyreadiness.org/3.9/
   - pip=22.1.2                  # https://pip.pypa.io/en/stable/news/
   - pip:
       # Define pip packages here -> https://pypi.org/
-      - rpaframework==21.0.1    # https://rpaframework.org/releasenotes.html
+      # - rpaframework==21.0.1    # https://rpaframework.org/releasenotes.html
+      - https://robocorp:freeasinbeer@devpi.robocorp.cloud/ci/test/+f/7a6/694f89f4830a4/rpaframework-21.1.0-py3-none-any.whl#sha256=7a6694f89f4830a42a250c254a5174c53b1a1839ad914933a45b39f39441d63b

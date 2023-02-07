@@ -1,9 +1,13 @@
 *** Settings ***
 Documentation       An Assistant that asks user to upload two files,
 ...                 and then runs Base64.ai signature matching on them.
-...                 The result is shown in the Assistant Dialog UI.        
+...                 The result is shown in the Assistant Dialog UI.
 
+Library    Collections
 Library    RPA.Dialogs
+Library    RPA.DocumentAI.Base64AI
+Library    RPA.Robocorp.Vault
+
 Resource   resources/base64.robot
 
 *** Variables ***
@@ -23,8 +27,20 @@ Signature match
 
     Show results dialog    ${sig_path_ref}    ${sig_path_query}    ${sig_conf_ref}    ${sig_conf_query}   ${score}
 
+Match Signatures With Library
+    ${secret} =     Get Secret    document_ai
+    @{api_creds} =      Split String    ${secret}[base64ai]     ,
+    Set Authorization    ${api_creds}[${0}]    ${api_creds}[${1}]
+
+    ${ref_image} =    Collect file from user    a new document with a signature    1
+    ${query_image} =    Collect file from user    an old document with reference signature    2
+    ${sigs} =   Get Matching Signatures     ${ref_image}    ${query_image}
+    &{matches} =   Filter Matching Signatures      ${sigs}    confidence_threshold=${THRESHOLD}    similarity_threshold=${THRESHOLD}
+    Log Dictionary    ${matches}
+
+
 *** Keywords ***
-Collect file from user   
+Collect file from user
     [Documentation]    Opens RPA.Dialogs dialogue asking user to upload a file
     [Arguments]     ${text}    ${stepnr}
 
