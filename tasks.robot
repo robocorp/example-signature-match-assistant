@@ -31,10 +31,14 @@ Match Signatures With Library
     ${secret} =     Get Secret    Base64
     Set Authorization    ${secret}[email]    ${secret}[api-key]
 
-    ${ref_image} =    Collect file from user    a new document with a signature    1
-    ${query_image} =    Collect file from user    an old document with reference signature    2
+    ${query_image} =    Collect file from user    a new document with a signature    1
+    ${ref_image} =    Collect file from user    an old document with reference signature    2
+
+    ${dialog}=    Show progress dialog
     ${sigs} =   Get Matching Signatures     ${ref_image}    ${query_image}
     &{matches} =   Filter Matching Signatures      ${sigs}    confidence_threshold=${THRESHOLD}    similarity_threshold=${THRESHOLD}
+    Close progress dialog    ${dialog}
+
     Log Dictionary    ${matches}
 
 
