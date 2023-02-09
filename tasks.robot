@@ -11,7 +11,7 @@ Library    RPA.Robocorp.Vault
 Resource   resources/base64.robot
 
 *** Variables ***
-${THRESHOLD}    0.8
+${THRESHOLD}    0.6
 
 *** Tasks ***
 Signature match assistant
@@ -36,10 +36,20 @@ Match Signatures With Library
 
     ${dialog}=    Show progress dialog
     ${sigs} =   Get Matching Signatures     ${ref_image}    ${query_image}
+    Log Dictionary    ${sigs}
     &{matches} =   Filter Matching Signatures      ${sigs}    confidence_threshold=${THRESHOLD}    similarity_threshold=${THRESHOLD}
     Close progress dialog    ${dialog}
-
     Log Dictionary    ${matches}
+
+    @{ref_sigs} =    Get Dictionary Keys    ${matches}
+    IF    ${ref_sigs}
+        @{qry_sigs} =    Get From Dictionary    ${matches}    ${ref_sigs}[${0}]
+        ${path} =    Get Signature Image    ${sigs}    index=${qry_sigs}[${0}][index]
+        Log To Console    Similar signature: ${path}
+    ELSE
+        Log To Console    No similar signature found
+    END
+
 
 
 *** Keywords ***
