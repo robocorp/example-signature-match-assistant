@@ -3,10 +3,8 @@
 
 tasks:
   # Task names here are used when executing the bots, so renaming these is recommended.
-  Signature match assistant:
-    robotTaskName: Signature match assistant
-  Match Signatures With Library:
-    robotTaskName: Match Signatures With Library
+  Check Signature Matching In Images:
+    robotTaskName: Check Signature Matching In Images
 
 condaConfigFile: conda.yaml
 
