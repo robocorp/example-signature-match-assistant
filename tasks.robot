@@ -1,7 +1,8 @@
 *** Settings ***
-Documentation       An Assistant that asks the user to upload two images, then runs
-...    the Base64.ai's signature matching algorithm over them in order to see if they
-...    match. The result is shown in the Assistant Dialog UI.
+Documentation    An Assistant that asks the user to upload two images, then runs
+...    the Base64.ai's signature matching algorithm over them in order to see what
+...    signatures are found there and if they match or not.
+...    The result is shown in the Assistant dialog UI.
 
 Library    Collections
 Library    RPA.Assistant
@@ -16,11 +17,11 @@ ${DEFAULT_THRESHOLD}    0.8
 
 *** Keywords ***
 Collect Images From User
-    [Documentation]    Render a UI that asks for two images and optionally threshold
+    [Documentation]    Render a UI that asks for two images and optional threshold
     ...    values.
 
     Clear Dialog
-    Add Heading    Validate signature in image
+    Add Heading    Validate signature from image
 
     Add File Input    name=query_image    label=Query Image (eg. contract)
     ...    source=devdata    destination=${OUTPUT_DIR}    file_type=${SUPPORTED_IMAGES}
