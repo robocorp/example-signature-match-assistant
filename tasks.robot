@@ -15,9 +15,9 @@ ${DEFAULT_THRESHOLD}    0.8
 
 
 *** Keywords ***
-Collect Images From User
+Collect And Check Signatures
     [Documentation]    Render a UI that asks for two images and optionally threshold
-    ...    values.
+    ...    values. Adds a button that checks signatures and goes to manual check UI.
 
     Clear Dialog
     Add Heading    Validate signature in image
@@ -33,9 +33,11 @@ Collect Images From User
     Add Text Input    name=similarity_threshold    label=Similarity Threshold
     ...    placeholder=0.0-1.0 (alike signatures)
 
-    &{result} =    Ask User
+    Add Next Ui Button  Check signatures  Check Signatures
+
+Check Signatures
+    [Arguments]  ${result}
     Log To Console    Result: ${result}
-    IF    "${result}[submit]" == "Close"    Pass Execution    Aborted
 
     # Validate input data and provide defaults for the optional threshold values.
     Dictionary Should Contain Key    ${result}    reference_image
@@ -50,56 +52,15 @@ Collect Images From User
     ${confidence_threshold} =    Convert To Number    ${confidence_threshold}
     ${similarity_threshold} =    Convert To Number    ${similarity_threshold}
 
-    RETURN    ${result}[query_image]    ${result}[reference_image]
-    ...    ${confidence_threshold}    ${similarity_threshold}
+    Analyze Signatures  ${result}[query_image]    ${result}[reference_image]  ${confidence_threshold}   ${similarity_threshold}
 
-Ask For Retry
-    [Documentation]    Continue or exit the loop of signature verification process.
-
-    Add submit buttons    buttons=Retry,Exit    default=Exit
-    &{result} =    Run Dialog
-    ${retry} =    Run Keyword And Return Status    Should Be Equal As Strings
-    ...    ${result}[submit]    Retry
-    RETURN    ${retry}
-
-Display Similar Signatures
-    [Documentation]    Show similar signatures as image crops for manual inspection.
-    [Arguments]    ${qry_path}    ${ref_path}    ${status}
-
+Analyze Signatures  
+    [Arguments]    ${qry_img}     ${ref_img}     ${conf_thres}  ${sim_thres}   
     Clear Dialog
-    IF    ${status}
-        Add Icon    Success
-        Add Heading    Signatures match
-    ELSE
-        Add Icon    Warning
-        Add Heading    Signatures don't match
-    END
-
-    Add text    The signature to check:
-    Add Image    ${qry_path}
-    Add text    The trusted signature to compare with:
-    Add Image    ${ref_path}
-
-    ${retry} =    Ask For Retry
-    RETURN    ${retry}
-
-Report No Similar Signatures
-    [Documentation]    Show that the signatures are not found nor matching at all.
-
-    Clear Dialog
-    Add Icon    Failure
-    Add Heading    No signatures recognized or they are too different
-    Add Text    Lower the confidence and similarity thresholds, then try again!
-
-    ${retry} =    Ask For Retry
-    RETURN    ${retry}
-
-Collect And Check Signatures
-    [Documentation]    Obtain two images and check for similar signatures with
-    ...    Base64.ai. Display the found signatures for further manual inspection.
-
-    ${qry_img}  ${ref_img}  ${conf_thres}  ${sim_thres} =    Collect Images From User
-    Log To Console    Analyzing images, please wait...
+    Add Heading  Analyzing images, please wait...
+    
+    Refresh Dialog
+    
     ${sigs} =   Get Matching Signatures     ${ref_img}[${0}]    ${qry_img}[${0}]
     Log Dictionary    ${sigs}  # the raw output with results
     &{matches} =   Filter Matching Signatures      ${sigs}
@@ -126,8 +87,43 @@ Collect And Check Signatures
         ${retry} =    Report No Similar Signatures
     END
 
-    RETURN    ${retry}
 
+Display Similar Signatures
+    [Documentation]    Show similar signatures as image crops for manual inspection.
+    [Arguments]    ${qry_path}    ${ref_path}    ${status}
+
+    Clear Dialog
+    IF    ${status}
+        Add Icon    Success
+        Add Heading    Signatures match
+    ELSE
+        Add Icon    Warning
+        Add Heading    Signatures don't match
+    END
+
+    Add text    The signature to check:
+    Add Image    ${qry_path}
+    Add text    The trusted signature to compare with:
+    Add Image    ${ref_path}
+
+    Add Button  Retry  Retry
+
+    Refresh Dialog
+
+Report No Similar Signatures
+    [Documentation]    Show that the signatures are not found nor matching at all.
+
+    Clear Dialog
+    Add Icon    Failure
+    Add Heading    No signatures recognized or they are too different
+    Add Text    Lower the confidence and similarity thresholds, then try again!
+
+    Add Button  Retry      Retry
+
+
+Retry
+    [Documentation]  Goes back to the main menu
+    Collect And Check Signatures
 
 *** Tasks ***
 Check Signature Matching In Images
@@ -138,7 +134,5 @@ Check Signature Matching In Images
     ${secret} =     Get Secret    Base64
     Set Authorization    ${secret}[email]    ${secret}[api-key]
 
-    WHILE    ${True}    limit=NONE
-        ${retry} =    Collect And Check Signatures
-        IF    ${retry} is ${False}    BREAK
-    END
+    Collect And Check Signatures
+    Run Dialog
