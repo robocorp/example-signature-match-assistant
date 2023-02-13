@@ -20,5 +20,5 @@ Ability to customize acceptance criteria (confidence and similarity thresholds).
 
 ## Remarks
 
-This robot uses the [`RPA.DocumentAI.Base64AI`]([ds](https://robocorp.com/docs/libraries/rpa-framework/rpa-documentai-base64ai))
+This robot uses the [`RPA.DocumentAI.Base64AI`](https://robocorp.com/docs/libraries/rpa-framework/rpa-documentai-base64ai)
 library and this requires a 3rd-party service and credentials (Vault) configuration.
