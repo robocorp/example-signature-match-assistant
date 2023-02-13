@@ -13,7 +13,7 @@ The two requested images are the following:
 
 ## Tasks
 
-### Check Signature Matching In Images
+### `Check Signature Matching In Images`
 
 Start an Assistant loop for checking similar signatures found in the provided images.
 Ability to customize acceptance criteria (confidence and similarity thresholds).
