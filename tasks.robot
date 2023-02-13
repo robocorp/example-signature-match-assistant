@@ -65,9 +65,11 @@ Ask For Retry
 
 Display Similar Signatures
     [Documentation]    Show similar signatures as image crops for manual inspection.
-    [Arguments]    ${qry_path}    ${ref_path}    ${status}
+    [Arguments]    ${qry_path}    ${qry_conf}    ${ref_path}    ${ref_conf}
+    ...    ${status}    ${similarity}
 
     Clear Dialog
+
     IF    ${status}
         Add Icon    Success
         Add Heading    Signatures match
@@ -76,9 +78,10 @@ Display Similar Signatures
         Add Heading    Signatures don't match
     END
 
-    Add text    The signature to check:
+    Add Heading    Similarity: ${similarity * 100}%
+    Add text    The signature to check (confidence ${qry_conf * 100}%):
     Add Image    ${qry_path}
-    Add text    The trusted signature to compare with:
+    Add text    The trusted signature to compare with (confidence ${ref_conf * 100}%):
     Add Image    ${ref_path}
 
     ${retry} =    Ask For Retry
@@ -119,12 +122,15 @@ Collect And Check Signatures
         &{qry_sig} =    Set Variable    ${qry_sigs}[${0}]
         ${qry_path} =    Get Signature Image    ${sigs}    index=${qry_sig}[index]
 
+        # Check if signatures are similar enough and retrieve the confidence as well.
         ${status} =    Run Keyword And Return Status    Should Be True
         ...    ${qry_sig}[similarity] >= ${sim_thres}
-        ${retry} =    Display Similar Signatures    ${qry_path}    ${ref_path}
-        ...    ${status}
+        ${qry_conf} =    Set Variable    ${sigs}[query][${qry_sig}[index]][confidence]
+        ${ref_conf} =    Set Variable    ${sigs}[reference][${ref_sig}[${0}]][confidence]
+        ${retry} =    Display Similar Signatures    ${qry_path}    ${qry_conf}
+        ...    ${ref_path}    ${ref_conf}    ${status}    ${qry_sig}[similarity]
     ELSE
-        ${retry} =    Report No Similar Signatures
+        ${retry} =    Report No Similar Signatures    ${sigs}
     END
 
     RETURN    ${retry}
