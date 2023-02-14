@@ -134,7 +134,7 @@ Collect And Check Signatures
         ${retry} =    Display Similar Signatures    ${qry_path}    ${qry_conf}
         ...    ${ref_path}    ${ref_conf}    ${status}    ${qry_sig}[similarity]
     ELSE
-        ${retry} =    Report No Similar Signatures    ${sigs}
+        ${retry} =    Report No Similar Signatures
     END
 
     RETURN    ${retry}
