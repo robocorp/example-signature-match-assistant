@@ -7,12 +7,14 @@ Documentation    An Assistant that asks the user to upload two images, then runs
 Library    Collections
 Library    RPA.Assistant
 Library    RPA.DocumentAI.Base64AI
+Library    RPA.FileSystem
 Library    RPA.Robocorp.Vault
 
 
 *** Variables ***
 ${SUPPORTED_IMAGES}    jpg,jpeg,png
 ${DEFAULT_THRESHOLD}    0.8
+${TITLE}    Signature Analyzer
 
 
 *** Keywords ***
@@ -21,20 +23,21 @@ Collect Images From User
     ...    values.
 
     Clear Dialog
+
     Add Heading    Validate signature from image
-
+    ${source_dir} =    Absolute Path    devdata
     Add File Input    name=query_image    label=Query Image (eg. contract)
-    ...    source=devdata    destination=${OUTPUT_DIR}    file_type=${SUPPORTED_IMAGES}
+    ...    source=${source_dir}    file_type=${SUPPORTED_IMAGES}
     Add File Input    name=reference_image    label=Reference Image (eg. passport)
-    ...    source=devdata    destination=${OUTPUT_DIR}    file_type=${SUPPORTED_IMAGES}
+    ...    source=${source_dir}    file_type=${SUPPORTED_IMAGES}
 
-    Add text    Optionally set custom thresholds (default: 0.8)
+    Add Text    Optionally set custom thresholds (default: 0.8)
     Add Text Input    name=confidence_threshold    label=Confidence Threshold
     ...    placeholder=0.0-1.0 (recognize signatures)
     Add Text Input    name=similarity_threshold    label=Similarity Threshold
     ...    placeholder=0.0-1.0 (alike signatures)
 
-    &{result} =    Ask User
+    &{result} =    Ask User    title=${TITLE} - Image selection
     Log To Console    Result: ${result}
     IF    "${result}[submit]" == "Close"    Pass Execution    Aborted
 
@@ -57,8 +60,8 @@ Collect Images From User
 Ask For Retry
     [Documentation]    Continue or exit the loop of signature verification process.
 
-    Add submit buttons    buttons=Retry,Exit    default=Exit
-    &{result} =    Run Dialog
+    Add Submit Buttons    buttons=Retry,Exit    default=Exit
+    &{result} =    Run Dialog    title=${TITLE} - Results
     ${retry} =    Run Keyword And Return Status    Should Be Equal As Strings
     ...    ${result}[submit]    Retry
     RETURN    ${retry}
@@ -79,9 +82,9 @@ Display Similar Signatures
     END
 
     Add Heading    Similarity: ${similarity * 100}%
-    Add text    The signature to check (confidence ${qry_conf * 100}%):
+    Add Text    The signature to check (confidence ${qry_conf * 100}%):
     Add Image    ${qry_path}
-    Add text    The trusted signature to compare with (confidence ${ref_conf * 100}%):
+    Add Text    The trusted signature to compare with (confidence ${ref_conf * 100}%):
     Add Image    ${ref_path}
 
     ${retry} =    Ask For Retry
@@ -91,6 +94,7 @@ Report No Similar Signatures
     [Documentation]    Show that the signatures are not found nor matching at all.
 
     Clear Dialog
+
     Add Icon    Failure
     Add Heading    No signatures recognized or they are too different
     Add Text    Lower the confidence and similarity thresholds, then try again!
