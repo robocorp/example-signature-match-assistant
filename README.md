@@ -6,10 +6,10 @@ can be adjusted)
 
 The two requested images are the following:
 - **Query**: The image that contains signatures you want to test. (like a contract or
-  check -- eg. [signature-check](devdata/signature-check.png))
+  check -- eg. [signature-check](devdata/signatures/signature-check.png))
 - **Reference**: A document you trust to have a valid signature belonging to the entity
   you're checking against. (like a passport or driver license -- eg.
-  [signature-license](devdata/signature-license.jpg))
+  [signature-license](devdata/signatures/signature-license.jpg))
 
 ## Tasks
 
@@ -17,6 +17,12 @@ The two requested images are the following:
 
 Start an Assistant loop for checking similar signatures found in the provided images.
 Ability to customize acceptance criteria (confidence and similarity thresholds).
+
+*Image selection* window:
+![Image selection](devdata/screens/image-selection.png)
+
+*Results* window:
+![Results](devdata/screens/results.png)
 
 ## Remarks
 

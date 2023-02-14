@@ -25,7 +25,7 @@ Collect Images From User
     Clear Dialog
 
     Add Heading    Validate signature from image
-    ${source_dir} =    Absolute Path    devdata
+    ${source_dir} =    Absolute Path    devdata${/}signatures
     Add File Input    name=query_image    label=Query Image (eg. contract)
     ...    source=${source_dir}    file_type=${SUPPORTED_IMAGES}
     Add File Input    name=reference_image    label=Reference Image (eg. passport)
