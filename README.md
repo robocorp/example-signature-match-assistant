@@ -19,10 +19,10 @@ Start an Assistant loop for checking similar signatures found in the provided im
 Ability to customize acceptance criteria (confidence and similarity thresholds).
 
 *Image selection* window:
-![Image selection](https://github.com/robocorp/example-signature-match-assistant/raw/master/devdata/screens/image-selection.png)
+![Image selection](devdata/screens/image-selection.png)
 
 *Results* window:
-![Results](https://github.com/robocorp/example-signature-match-assistant/raw/master/devdata/screens/results.png)
+![Results](devdata/screens/results.png)
 
 ## Remarks
 
