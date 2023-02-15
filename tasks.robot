@@ -33,9 +33,9 @@ Collect Images From User
 
     Add Text    Optionally set custom thresholds (default: 0.8)
     Add Text Input    name=confidence_threshold    label=Confidence Threshold
-    ...    placeholder=0.0-1.0 (recognize signatures)
+    ...    placeholder=0.0-1.0 (recognize signatures)    default=0.8
     Add Text Input    name=similarity_threshold    label=Similarity Threshold
-    ...    placeholder=0.0-1.0 (alike signatures)
+    ...    placeholder=0.0-1.0 (alike signatures)    default=0.8
 
     &{result} =    Ask User    title=${TITLE} - Image selection
     Log To Console    Result: ${result}
