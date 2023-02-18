@@ -32,10 +32,12 @@ Collect Images From User
     ...    source=${source_dir}    file_type=${SUPPORTED_IMAGES}
 
     Add Text    Optionally set custom thresholds (default: 0.8)
-    Add Text Input    name=confidence_threshold    label=Confidence Threshold
-    ...    placeholder=0.0-1.0 (recognize signatures)    default=0.8
-    Add Text Input    name=similarity_threshold    label=Similarity Threshold
-    ...    placeholder=0.0-1.0 (alike signatures)    default=0.8
+    Add Text  Confidence Threshold
+    Add Slider  confidence_threshold  slider_min=0.0  slider_max=1.0
+    ...    steps=10  default=0.8
+    Add Text  Similarity Threshold
+    Add Slider  similarity_threshold  slider_min=0.0  slider_max=1.0
+    ...    steps=10  default=0.8
 
     &{result} =    Ask User    title=${TITLE} - Image selection
     Log To Console    Result: ${result}
