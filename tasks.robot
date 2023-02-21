@@ -1,17 +1,20 @@
 *** Settings ***
-Documentation       An Assistant that asks the user to upload two images, then runs
-...    the Base64.ai's signature matching algorithm over them in order to see if they
-...    match. The result is shown in the Assistant Dialog UI.
+Documentation    An Assistant that asks the user to upload two images, then runs
+...    the Base64.ai's signature matching algorithm over them in order to see what
+...    signatures are found there and if they match or not.
+...    The result is shown in the Assistant dialog UI.
 
 Library    Collections
 Library    RPA.Assistant
 Library    RPA.DocumentAI.Base64AI
+Library    RPA.FileSystem
 Library    RPA.Robocorp.Vault
 
 
 *** Variables ***
 ${SUPPORTED_IMAGES}    jpg,jpeg,png
 ${DEFAULT_THRESHOLD}    0.8
+${TITLE}    Signature Analyzer
 
 
 *** Keywords ***
@@ -19,24 +22,29 @@ Collect And Check Signatures
     [Documentation]    Render a UI that asks for two images and optionally threshold
     ...    values. Adds a button that checks signatures and goes to manual check UI.
 
+
     Clear Dialog
-    Add Heading    Validate signature in image
 
+    Add Heading    Validate signature from image
+    ${source_dir} =    Absolute Path    devdata${/}signatures
     Add File Input    name=query_image    label=Query Image (eg. contract)
-    ...    source=devdata    destination=${OUTPUT_DIR}    file_type=${SUPPORTED_IMAGES}
+    ...    source=${source_dir}    file_type=${SUPPORTED_IMAGES}
     Add File Input    name=reference_image    label=Reference Image (eg. passport)
-    ...    source=devdata    destination=${OUTPUT_DIR}    file_type=${SUPPORTED_IMAGES}
+    ...    source=${source_dir}    file_type=${SUPPORTED_IMAGES}
 
-    Add text    Optionally set custom thresholds (default: 0.8)
-    Add Text Input    name=confidence_threshold    label=Confidence Threshold
-    ...    placeholder=0.0-1.0 (recognize signatures)
-    Add Text Input    name=similarity_threshold    label=Similarity Threshold
-    ...    placeholder=0.0-1.0 (alike signatures)
+    Add Text    Optionally set custom thresholds (default: 0.8)
+    Add Text  Confidence Threshold
+    Add Slider  confidence_threshold  slider_min=0.0  slider_max=1.0
+    ...    steps=10  default=0.8
+    Add Text  Similarity Threshold
+    Add Slider  similarity_threshold  slider_min=0.0  slider_max=1.0
+    ...    steps=10  default=0.8
 
     Add Next Ui Button  Check signatures  Check Signatures
 
 Check Signatures
     [Arguments]  ${result}
+
     Log To Console    Result: ${result}
 
     # Validate input data and provide defaults for the optional threshold values.
@@ -54,13 +62,16 @@ Check Signatures
 
     Analyze Signatures  ${result}[query_image]    ${result}[reference_image]  ${confidence_threshold}   ${similarity_threshold}
 
+
 Analyze Signatures  
     [Arguments]    ${qry_img}     ${ref_img}     ${conf_thres}  ${sim_thres}   
     Clear Dialog
+    
     Add Heading  Analyzing images, please wait...
     
     Refresh Dialog
     
+
     ${sigs} =   Get Matching Signatures     ${ref_img}[${0}]    ${qry_img}[${0}]
     Log Dictionary    ${sigs}  # the raw output with results
     &{matches} =   Filter Matching Signatures      ${sigs}
@@ -79,10 +90,12 @@ Analyze Signatures
         &{qry_sig} =    Set Variable    ${qry_sigs}[${0}]
         ${qry_path} =    Get Signature Image    ${sigs}    index=${qry_sig}[index]
 
+        # Check if signatures are similar enough and retrieve the confidence as well.
         ${status} =    Run Keyword And Return Status    Should Be True
         ...    ${qry_sig}[similarity] >= ${sim_thres}
-        ${retry} =    Display Similar Signatures    ${qry_path}    ${ref_path}
-        ...    ${status}
+        ${qry_conf} =    Set Variable    ${sigs}[query][${qry_sig}[index]][confidence]
+        ${ref_conf} =    Set Variable    ${sigs}[reference][${ref_sig}[${0}]][confidence]
+        ${retry} =    Display Similar Signatures    ${qry_path}    ${ref_path}    ${status}    
     ELSE
         ${retry} =    Report No Similar Signatures
     END
@@ -124,6 +137,7 @@ Report No Similar Signatures
 Retry
     [Documentation]  Goes back to the main menu
     Collect And Check Signatures
+    Refresh Dialog
 
 *** Tasks ***
 Check Signature Matching In Images
@@ -135,4 +149,4 @@ Check Signature Matching In Images
     Set Authorization    ${secret}[email]    ${secret}[api-key]
 
     Collect And Check Signatures
-    Run Dialog
+    Run Dialog  height=600
