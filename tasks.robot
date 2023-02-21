@@ -149,4 +149,4 @@ Check Signature Matching In Images
     Set Authorization    ${secret}[email]    ${secret}[api-key]
 
     Collect And Check Signatures
-    Run Dialog  height=600
+    Run Dialog  height=750
