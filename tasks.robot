@@ -105,7 +105,8 @@ Analyze Signatures
         ${status} =    Run Keyword And Return Status    Should Be True
         ...    ${qry_sig}[similarity] >= ${sim_thres}
         ${qry_conf} =    Set Variable    ${sigs}[query][${qry_sig}[index]][confidence]
-        ${ref_conf} =    Set Variable    ${sigs}[reference][${ref_sig}[${0}]][confidence]
+        ${ref_conf} =    Set Variable
+        ...    ${sigs}[reference][${ref_sig}[${0}]][confidence]
 
         Display Similar Signatures    ${qry_path}    ${qry_conf}
         ...    ${ref_path}    ${ref_conf}    ${status}    ${qry_sig}[similarity]
@@ -115,7 +116,8 @@ Analyze Signatures
 
 Display Similar Signatures
     [Documentation]    Show similar signatures as image crops for manual inspection.
-    [Arguments]    ${qry_path}  ${qry_conf}  ${ref_path}  ${ref_conf}  ${status}  ${similarity}
+    [Arguments]    ${qry_path}  ${qry_conf}  ${ref_path}  ${ref_conf}
+    ...    ${status}  ${similarity}
 
     Clear Dialog
     IF    ${status}
@@ -128,9 +130,9 @@ Display Similar Signatures
 
     Add Heading    Similarity: ${similarity * 100}%
 
-    Add text    The signature to check (confidence ${qry_conf * 100}%):
+    Add Text    The signature to check (confidence ${qry_conf * 100}%):
     Add Image    ${qry_path}
-    Add text    The trusted signature to compare with (confidence ${ref_conf * 100}%):
+    Add Text    The trusted signature to compare with (confidence ${ref_conf * 100}%):
     Add Image    ${ref_path}
 
     Add Button  Retry  Retry Dialog
