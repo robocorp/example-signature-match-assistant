@@ -4,7 +4,8 @@
 tasks:
   # Task names here are used when executing the bots, so renaming these is recommended.
   Check Signature Matching In Images:
-    robotTaskName: Check Signature Matching In Images
+    shell: python -m robot --report NONE --outputdir output --logtitle "Task log" tasks.robot
+
 
 condaConfigFile: conda.yaml
 
