@@ -95,15 +95,17 @@ Analyze Signatures
         ...    ${qry_sig}[similarity] >= ${sim_thres}
         ${qry_conf} =    Set Variable    ${sigs}[query][${qry_sig}[index]][confidence]
         ${ref_conf} =    Set Variable    ${sigs}[reference][${ref_sig}[${0}]][confidence]
-        ${retry} =    Display Similar Signatures    ${qry_path}    ${ref_path}    ${status}    
+        
+        Display Similar Signatures    ${qry_path}    ${qry_conf}  
+        ...  ${ref_path}    ${ref_conf}    ${status}    ${qry_sig}[similarity]
     ELSE
-        ${retry} =    Report No Similar Signatures
+        Report No Similar Signatures
     END
 
 
 Display Similar Signatures
     [Documentation]    Show similar signatures as image crops for manual inspection.
-    [Arguments]    ${qry_path}    ${ref_path}    ${status}
+    [Arguments]    ${qry_path}  ${qry_conf}  ${ref_path}  ${ref_conf}  ${status}  ${similarity}
 
     Clear Dialog
     IF    ${status}
@@ -114,9 +116,11 @@ Display Similar Signatures
         Add Heading    Signatures don't match
     END
 
-    Add text    The signature to check:
+    Add Heading    Similarity: ${similarity * 100}%
+
+    Add text    The signature to check (confidence ${qry_conf * 100}%):
     Add Image    ${qry_path}
-    Add text    The trusted signature to compare with:
+    Add text    The trusted signature to compare with (confidence ${ref_conf * 100}%):
     Add Image    ${ref_path}
 
     Add Button  Retry  Retry
@@ -149,4 +153,4 @@ Check Signature Matching In Images
     Set Authorization    ${secret}[email]    ${secret}[api-key]
 
     Collect And Check Signatures
-    Run Dialog  height=750
+    Run Dialog  height=750  title=title=${TITLE}
