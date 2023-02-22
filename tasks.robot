@@ -20,16 +20,15 @@ ${TITLE}    Signature Analyzer
 *** Keywords ***
 Collect And Check Signatures
     [Documentation]    Render a UI that asks for two images and optionally threshold
-    ...    values. Adds a button that checks signatures and goes to manual check UI.
-
+    ...    values. Adds a button that checks signatures and displays found results.
 
     Clear Dialog
 
     Add Heading    Validate signature from image
     ${source_dir} =    Absolute Path    devdata${/}signatures
-    Add File Input    name=query_image    label=Query Image (eg. contract)
+    Add File Input    name=query_image    label=Query Image (e.g. contract)
     ...    source=${source_dir}    file_type=${SUPPORTED_IMAGES}
-    Add File Input    name=reference_image    label=Reference Image (eg. passport)
+    Add File Input    name=reference_image    label=Reference Image (e.g. passport)
     ...    source=${source_dir}    file_type=${SUPPORTED_IMAGES}
 
     Add Text    Optionally set custom thresholds (default: 0.8)
@@ -48,12 +47,12 @@ Check Signatures
     Log To Console    Result: ${result}
 
     # Validate input data, if it doesn't contain both required pictures we
-    # report the error to the user
+    # report the error to the user.
     TRY
-        Dictionary Should Contain Key    ${result}    reference_image
-        ...    msg=A reference image must be provided
         Dictionary Should Contain Key    ${result}    query_image
         ...    msg=A query image must be provided
+        Dictionary Should Contain Key    ${result}    reference_image
+        ...    msg=A reference image must be provided
     EXCEPT  AS  ${error}
         Report Error    ${error}
         RETURN
@@ -66,23 +65,22 @@ Check Signatures
     ${confidence_threshold} =    Convert To Number    ${confidence_threshold}
     ${similarity_threshold} =    Convert To Number    ${similarity_threshold}
 
-    Analyze Signatures  ${result}[query_image]    ${result}[reference_image]  ${confidence_threshold}   ${similarity_threshold}
+    Analyze Signatures  ${result}[query_image]    ${result}[reference_image]
+    ...    ${confidence_threshold}   ${similarity_threshold}
 
+Analyze Signatures
+    [Arguments]    ${qry_img}     ${ref_img}     ${conf_thres}    ${sim_thres}
 
-Analyze Signatures  
-    [Arguments]    ${qry_img}     ${ref_img}     ${conf_thres}  ${sim_thres}   
     Clear Dialog
-    
     Add Heading  Analyzing images, please wait...
-    
     Refresh Dialog
-    
-    # Call the Base64 API to check if the signatures match. 
-    # Use TRY EXCEPT to handle API errors and display them.
+
+    # Call the Base64 API to check if the signatures match. Use TRY-EXCEPT to handle
+    #  the API errors and display them.
     TRY
         ${sigs} =   Get Matching Signatures     ${ref_img}[${0}]    ${qry_img}[${0}]
-    EXCEPT  AS  ${Error Message}
-        Report Error  ${Error Message}
+    EXCEPT  AS  ${err_msg}
+        Report Error  ${err_msg}
         RETURN
     END
 
@@ -96,7 +94,7 @@ Analyze Signatures
         # Get signature image crop from the first found reference.
         ${ref_sig} =    Set Variable    ${ref_sigs}[${0}]
         ${ref_path} =    Get Signature Image    ${sigs}    index=${ref_sig}[${0}]
-        ...    reference=${True}  # very important to tell when retrieving references
+        ...    reference=${True}  # very important to set when retrieving references
 
         # Now get the most similar to reference found signature in the queried image.
         @{qry_sigs} =    Get From Dictionary    ${matches}    ${ref_sig}
@@ -108,13 +106,12 @@ Analyze Signatures
         ...    ${qry_sig}[similarity] >= ${sim_thres}
         ${qry_conf} =    Set Variable    ${sigs}[query][${qry_sig}[index]][confidence]
         ${ref_conf} =    Set Variable    ${sigs}[reference][${ref_sig}[${0}]][confidence]
-        
-        Display Similar Signatures    ${qry_path}    ${qry_conf}  
-        ...  ${ref_path}    ${ref_conf}    ${status}    ${qry_sig}[similarity]
+
+        Display Similar Signatures    ${qry_path}    ${qry_conf}
+        ...    ${ref_path}    ${ref_conf}    ${status}    ${qry_sig}[similarity]
     ELSE
         Report No Similar Signatures
     END
-
 
 Display Similar Signatures
     [Documentation]    Show similar signatures as image crops for manual inspection.
@@ -136,7 +133,7 @@ Display Similar Signatures
     Add text    The trusted signature to compare with (confidence ${ref_conf * 100}%):
     Add Image    ${ref_path}
 
-    Add Button  Retry  Retry
+    Add Button  Retry  Retry Dialog
 
     Refresh Dialog
 
@@ -148,24 +145,27 @@ Report No Similar Signatures
     Add Heading    No signatures recognized or they are too different
     Add Text    Lower the confidence and similarity thresholds, then try again!
 
-    Add Button  Retry      Retry
+    Add Button  Retry      Retry Dialog
     Refresh Dialog
 
 Report Error
-    [Documentation]  Report error in the UI
+    [Documentation]  Report an error in the UI.
+
     [Arguments]  ${error_message}
+
     Clear Dialog
     Add Icon    Failure
     Add Heading    Got error:
     Add Text  ${error_message}
-    Add Button  Retry      Retry
+    Add Button  Retry      Retry Dialog
     Refresh Dialog
 
+Retry Dialog
+    [Documentation]  Goes back to the main menu.
 
-Retry
-    [Documentation]  Goes back to the main menu
     Collect And Check Signatures
     Refresh Dialog
+
 
 *** Tasks ***
 Check Signature Matching In Images
@@ -177,4 +177,4 @@ Check Signature Matching In Images
     Set Authorization    ${secret}[email]    ${secret}[api-key]
 
     Collect And Check Signatures
-    Run Dialog  height=750  title=title=${TITLE}
+    Run Dialog  height=750  title=${TITLE}
