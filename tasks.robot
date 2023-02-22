@@ -47,11 +47,17 @@ Check Signatures
 
     Log To Console    Result: ${result}
 
-    # Validate input data and provide defaults for the optional threshold values.
-    Dictionary Should Contain Key    ${result}    reference_image
-    ...    msg=A reference image must be provided
-    Dictionary Should Contain Key    ${result}    query_image
-    ...    msg=A query image must be provided
+    # Validate input data, if it doesn't contain both required pictures we
+    # report the error to the user
+    TRY
+        Dictionary Should Contain Key    ${result}    reference_image
+        ...    msg=A reference image must be provided
+        Dictionary Should Contain Key    ${result}    query_image
+        ...    msg=A query image must be provided
+    EXCEPT  AS  ${error}
+        Report Error    ${error}
+        RETURN
+    END
 
     ${confidence_threshold} =    Pop From Dictionary    ${result}
     ...    confidence_threshold    default=${DEFAULT_THRESHOLD}
@@ -71,8 +77,15 @@ Analyze Signatures
     
     Refresh Dialog
     
+    # Call the Base64 API to check if the signatures match. 
+    # Use TRY EXCEPT to handle API errors and display them.
+    TRY
+        ${sigs} =   Get Matching Signatures     ${ref_img}[${0}]    ${qry_img}[${0}]
+    EXCEPT  AS  ${Error Message}
+        Report Error  ${Error Message}
+        RETURN
+    END
 
-    ${sigs} =   Get Matching Signatures     ${ref_img}[${0}]    ${qry_img}[${0}]
     Log Dictionary    ${sigs}  # the raw output with results
     &{matches} =   Filter Matching Signatures      ${sigs}
     ...    confidence_threshold=${conf_thres}    similarity_threshold=${sim_thres / 2}
@@ -136,6 +149,17 @@ Report No Similar Signatures
     Add Text    Lower the confidence and similarity thresholds, then try again!
 
     Add Button  Retry      Retry
+    Refresh Dialog
+
+Report Error
+    [Documentation]  Report error in the UI
+    [Arguments]  ${error_message}
+    Clear Dialog
+    Add Icon    Failure
+    Add Heading    Got error:
+    Add Text  ${error_message}
+    Add Button  Retry      Retry
+    Refresh Dialog
 
 
 Retry
